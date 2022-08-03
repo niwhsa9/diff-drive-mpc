@@ -9,6 +9,10 @@ import pygame
 
 @dataclass
 class Sim:
+    '''
+    Grapical simulator implementation for testing controllers on 
+    robot models with no state estimation noise.
+    '''
     sim_freq : float
     control_freq : float
     robot : Robot
@@ -24,7 +28,7 @@ class Sim:
     def world_to_screen_dims(self, world_pos : np.ndarray) -> np.ndarray:
         pass
 
-    def draw(self, screen: pygame.Surface):
+    def draw(self, screen: pygame.Surface) -> None:
         screen.fill((255, 255, 255))
         pygame.display.flip()
 
@@ -45,12 +49,11 @@ class Sim:
                     running = False
            
             # Get control input
-            u = controller.
+            u = controller.get_control(robot.x)
 
             # Update the simulated state
             for _ in range(sim_ticks_per_control):
-            
-                robot.update_state(sim_dt, u)
+                robot.update_state(u, sim_dt)
                 time += sim_dt
 
             # Graphics

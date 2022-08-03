@@ -1,5 +1,7 @@
-class Controller:
-    
-    get_control(
+from abc import ABC
 
-    pass
+import numpy as np
+
+class Controller(ABC):
+    def get_control(self, x : np.ndarray) -> np.ndarray:
+        pass
