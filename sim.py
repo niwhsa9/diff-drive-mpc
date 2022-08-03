@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Tuple, Sequence
 
 from robot import Robot, UnicycleKinematics
 from controller import Controller, DummyController
@@ -18,27 +18,39 @@ class Sim:
     robot : Robot
     controller : Controller
     # World dims in meters
-    world_dims : Tuple[int, int]
+    world_dims : Tuple[int, int] = (30, 30)
     # Screen dims in pixels
     screen_dims : Tuple[int, int] = (500, 500)
+    # Robot size in meters, RH coordinate with +X aligned to 'front'
+    robot_size : Tuple[int, int] = (2, 1)
 
     def world_to_screen_pos(self, world_pos : np.ndarray) -> np.ndarray:
         pass
 
-    def world_to_screen_dims(self, world_pos : np.ndarray) -> np.ndarray:
-        pass
+    def world_to_screen_dims(self, world_dims : np.ndarray) -> np.ndarray:
+        return world_dims * np.array(self.screen_dims)/np.array(self.world_dims)
 
-    def draw(self, screen: pygame.screen.Surface) -> None:
-        screen.fill((255, 255, 255))
+    def draw(self, screen: pygame.surface.Surface) -> None:
+        screen.fill((0, 0, 0))
+
+        # Display the robot
+        #robot_pos = self.world_to_screen_pos(robot.get_drawable())
+        screen.blit(self.robot_sprite, self.robot_sprite.get_rect())
+
+            
         pygame.display.flip()
 
     def run(self):
         pygame.init()
         screen : pygame.surface.Surface = pygame.display.set_mode(self.screen_dims)
 
+        self.robot_sprite = pygame.transform.scale(pygame.image.load("arrow.jpg"), self.world_to_screen_dims(self.robot_size))
+        # self.robot_sprite.convert()
+        # self.robot_sprite.set_color_key((0, 0, 0))
+
         running : bool = True
 
-        sim_ticks_per_control : int = np.round(self.sim_freq / self.control_freq)
+        sim_ticks_per_control : int = int(round(self.sim_freq / self.control_freq))
         sim_dt : float = 1.0 / self.sim_freq
         time = 0
 
@@ -62,7 +74,7 @@ class Sim:
         pygame.quit()
 
 if __name__ == "__main__":
-    robot = UnicycleKinematics(np.array([0, 0]))
+    robot = UnicycleKinematics(np.array([0, 0, 0]))
     controller = DummyController()
-    sim = Sim(240, 60, robot, controller, (30, 30))
+    sim = Sim(240, 60, robot, controller)
     sim.run()

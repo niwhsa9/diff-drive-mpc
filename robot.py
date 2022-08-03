@@ -1,11 +1,9 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-
-from sim import Sim
+from typing import Tuple
 
 import numpy as np
-import pygame
 
 @dataclass
 class Robot(ABC):
@@ -13,12 +11,6 @@ class Robot(ABC):
     Generic robot dynamics model x' = f(x, u)
     """
     x : np.ndarray
-
-    @abstractmethod
-    def draw(self, sim: Sim, screen : pygame.surface.Surface):
-        """
-        Draws the robot on the screen
-        """
 
     @abstractmethod
     def update_state(self, u : np.ndarray, dt : float) -> np.ndarray:
@@ -30,6 +22,9 @@ class Robot(ABC):
         u - control input
         dt - elapsed time since previous polling
         """
+    @abstractmethod
+    def get_drawable(self) -> Tuple[float, float, float]:
+        pass
 
 @dataclass
 class LinearRobot(Robot):
@@ -38,10 +33,6 @@ class LinearRobot(Robot):
     """
     A : np.ndarray
     B : np.ndarray
-
-    def __init__(self, A, B):
-        self.A = A
-        self.B = B
 
     def update_state(self, u : np.ndarray, _) -> np.ndarray:
         """
@@ -60,15 +51,14 @@ class UnicycleKinematics(Robot):
     theta' = omega
 
     With control inputs: v, omega. 
-    ref: http://www.ece.ufrgs.br/~fetter/sbai05_10022.pdf
     """
-    def draw(self, sim: Sim, screen : pygame.Surface):
-        pass
+    def get_drawable(self) -> Tuple[float, float, float]:
+        return tuple(self.x)
 
     def update_state(self, u : np.ndarray, dt : float) -> np.ndarray:
-        '''
+        """
         Provides a first-order discrete time Euler integration update
-        '''
+        """
         self.x[0] += u[0] * np.cos(self.x[2]) * dt
         self.x[1] += u[0] * np.sin(self.x[2]) * dt
         self.x[2] += u[1] * dt
@@ -80,7 +70,9 @@ class LinearUnicycleKinematics(LinearRobot):
     """
     This is a linearization of the unicycle kinematics
     """
-    @classmethod
-    def from_dt(cls, dt : float) -> UnicycleKinematicsRobot:
-        pass
+    def get_drawable(self) -> Tuple[float, float, float]:
+        return tuple(self.x)
 
+    @classmethod
+    def from_dt(cls, x: np.ndarray, dt : float) -> LinearUnicycleKinematics:
+        return LinearUnicycleKinematics(x, np.eye(3) * dt, np.eye(3) * dt)
