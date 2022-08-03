@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Tuple
 
 from robot import Robot, UnicycleKinematics
-from controller import Controller
+from controller import Controller, DummyController
 
 import numpy as np
 import pygame
@@ -28,13 +28,13 @@ class Sim:
     def world_to_screen_dims(self, world_pos : np.ndarray) -> np.ndarray:
         pass
 
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self, screen: pygame.screen.Surface) -> None:
         screen.fill((255, 255, 255))
         pygame.display.flip()
 
     def run(self):
         pygame.init()
-        screen : pygame.Surface = pygame.display.set_mode(self.screen_dims)
+        screen : pygame.surface.Surface = pygame.display.set_mode(self.screen_dims)
 
         running : bool = True
 
@@ -63,6 +63,6 @@ class Sim:
 
 if __name__ == "__main__":
     robot = UnicycleKinematics(np.array([0, 0]))
-    controller = Controller()
+    controller = DummyController()
     sim = Sim(240, 60, robot, controller, (30, 30))
     sim.run()

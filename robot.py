@@ -15,7 +15,7 @@ class Robot(ABC):
     x : np.ndarray
 
     @abstractmethod
-    def draw(self, sim: Sim, screen : pygame.Surface):
+    def draw(self, sim: Sim, screen : pygame.surface.Surface):
         """
         Draws the robot on the screen
         """
@@ -62,6 +62,8 @@ class UnicycleKinematics(Robot):
     With control inputs: v, omega. 
     ref: http://www.ece.ufrgs.br/~fetter/sbai05_10022.pdf
     """
+    def draw(self, sim: Sim, screen : pygame.Surface):
+        pass
 
     def update_state(self, u : np.ndarray, dt : float) -> np.ndarray:
         '''
