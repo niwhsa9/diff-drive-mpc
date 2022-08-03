@@ -80,6 +80,7 @@ class LinearUnicycleKinematics(LinearRobot):
     """
     This is a linearization of the unicycle kinematics
     """
+
     def get_drawable(self) -> Tuple[np.ndarray, float]:
         return self.x[:2], self.x[2]
 

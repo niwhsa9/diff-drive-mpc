@@ -30,7 +30,7 @@ class Sim:
         pos = np.copy(world_pos)
         # This inversion is necessary due to standard y down image coordinates
         pos[1] *= -1
-        return pos * self.screen_dims/self.world_dims + self.screen_dims/2
+        return pos * self.screen_dims / self.world_dims + self.screen_dims / 2
 
     def world_to_screen_dims(self, world_dims: np.ndarray) -> np.ndarray:
         return world_dims * np.array(self.screen_dims) / np.array(self.world_dims)
@@ -41,8 +41,12 @@ class Sim:
 
         # Display the robot
         robot_pos, robot_theta = robot.get_drawable()
-        robot_sprite = pygame.transform.rotate(self.robot_sprite, np.rad2deg(robot_theta))
-        hitbox = robot_sprite.get_rect(center=tuple(self.world_to_screen_pos(robot_pos)))
+        robot_sprite = pygame.transform.rotate(
+            self.robot_sprite, np.rad2deg(robot_theta)
+        )
+        hitbox = robot_sprite.get_rect(
+            center=tuple(self.world_to_screen_pos(robot_pos))
+        )
         screen.blit(robot_sprite, hitbox)
 
         # Flip buffers to draw graphics
@@ -87,7 +91,7 @@ class Sim:
 
 
 if __name__ == "__main__":
-    robot = UnicycleKinematics(np.array([0, 0, np.pi/4]))
+    robot = UnicycleKinematics(np.array([0, 0, np.pi / 4]))
     controller = DummyController()
     sim = Sim(240, 60, robot, controller)
     sim.run()
