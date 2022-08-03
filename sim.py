@@ -7,51 +7,61 @@ from controller import Controller, DummyController
 import numpy as np
 import pygame
 
+
 @dataclass
 class Sim:
-    '''
+    """
     Grapical simulator implementation for testing controllers on 
     robot models with no state estimation noise.
-    '''
-    sim_freq : float
-    control_freq : float
-    robot : Robot
-    controller : Controller
+    """
+
+    sim_freq: float
+    control_freq: float
+    robot: Robot
+    controller: Controller
     # World dims in meters
-    world_dims : Tuple[int, int] = (30, 30)
+    world_dims: np.ndarray = np.array([30, 30])
     # Screen dims in pixels
-    screen_dims : Tuple[int, int] = (500, 500)
+    screen_dims: np.ndarray = np.array([500, 500])
     # Robot size in meters, RH coordinate with +X aligned to 'front'
-    robot_size : Tuple[int, int] = (2, 1)
+    robot_size: np.ndarray = np.array([2, 1])
 
-    def world_to_screen_pos(self, world_pos : np.ndarray) -> np.ndarray:
-        pass
+    def world_to_screen_pos(self, world_pos: np.ndarray) -> np.ndarray:
+        pos = np.copy(world_pos)
+        # This inversion is necessary due to standard y down image coordinates
+        pos[1] *= -1
+        return pos * self.screen_dims/self.world_dims + self.screen_dims/2
 
-    def world_to_screen_dims(self, world_dims : np.ndarray) -> np.ndarray:
-        return world_dims * np.array(self.screen_dims)/np.array(self.world_dims)
+    def world_to_screen_dims(self, world_dims: np.ndarray) -> np.ndarray:
+        return world_dims * np.array(self.screen_dims) / np.array(self.world_dims)
 
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.fill((0, 0, 0))
 
         # Display the robot
-        #robot_pos = self.world_to_screen_pos(robot.get_drawable())
-        screen.blit(self.robot_sprite, self.robot_sprite.get_rect())
+        robot_pos, robot_theta = robot.get_drawable()
+        hitbox = self.robot_sprite.get_rect()
+        hitbox.center = tuple(self.world_to_screen_pos(robot_pos))
+        #rotated_hitbox = pygame.transform.rotate(
+        screen.blit(self.robot_sprite, hitbox)
 
-            
         pygame.display.flip()
 
     def run(self):
         pygame.init()
-        screen : pygame.surface.Surface = pygame.display.set_mode(self.screen_dims)
+        screen: pygame.surface.Surface = pygame.display.set_mode(self.screen_dims)
 
-        self.robot_sprite = pygame.transform.scale(pygame.image.load("arrow.jpg"), self.world_to_screen_dims(self.robot_size))
+        self.robot_sprite = pygame.transform.scale(
+            pygame.image.load("resources/arrow.jpg"),
+            self.world_to_screen_dims(self.robot_size),
+        )
         # self.robot_sprite.convert()
         # self.robot_sprite.set_color_key((0, 0, 0))
 
-        running : bool = True
+        running: bool = True
 
-        sim_ticks_per_control : int = int(round(self.sim_freq / self.control_freq))
-        sim_dt : float = 1.0 / self.sim_freq
+        sim_ticks_per_control: int = int(round(self.sim_freq / self.control_freq))
+        sim_dt: float = 1.0 / self.sim_freq
         time = 0
 
         while running:
@@ -59,7 +69,7 @@ class Sim:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-           
+
             # Get control input
             u = controller.get_control(robot.x)
 
@@ -70,8 +80,9 @@ class Sim:
 
             # Graphics
             self.draw(screen)
-            
+
         pygame.quit()
+
 
 if __name__ == "__main__":
     robot = UnicycleKinematics(np.array([0, 0, 0]))

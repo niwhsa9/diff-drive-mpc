@@ -5,15 +5,17 @@ from typing import Tuple
 
 import numpy as np
 
+
 @dataclass
 class Robot(ABC):
     """
     Generic robot dynamics model x' = f(x, u)
     """
-    x : np.ndarray
+
+    x: np.ndarray
 
     @abstractmethod
-    def update_state(self, u : np.ndarray, dt : float) -> np.ndarray:
+    def update_state(self, u: np.ndarray, dt: float) -> np.ndarray:
         """
         Updates the internal state and returns the next state via
         whatever numerical ODE method is chosen
@@ -22,24 +24,31 @@ class Robot(ABC):
         u - control input
         dt - elapsed time since previous polling
         """
+
     @abstractmethod
-    def get_drawable(self) -> Tuple[float, float, float]:
+    def get_drawable(self) -> Tuple[np.ndarray, float]:
+        """
+        Our sim can draw a 2d robot with a position and orientation
+        """
         pass
+
 
 @dataclass
 class LinearRobot(Robot):
     """
     Discrete time LTI dynamics model x' = Ax + Bu
     """
-    A : np.ndarray
-    B : np.ndarray
 
-    def update_state(self, u : np.ndarray, _) -> np.ndarray:
+    A: np.ndarray
+    B: np.ndarray
+
+    def update_state(self, u: np.ndarray, _) -> np.ndarray:
         """
         Args:
         u - state space control input
         """
         return self.A @ self.x + self.B @ u
+
 
 @dataclass
 class UnicycleKinematics(Robot):
@@ -52,10 +61,11 @@ class UnicycleKinematics(Robot):
 
     With control inputs: v, omega. 
     """
-    def get_drawable(self) -> Tuple[float, float, float]:
-        return tuple(self.x)
 
-    def update_state(self, u : np.ndarray, dt : float) -> np.ndarray:
+    def get_drawable(self) -> Tuple[np.ndarray, float]:
+        return self.x[:2], self.x[2]
+
+    def update_state(self, u: np.ndarray, dt: float) -> np.ndarray:
         """
         Provides a first-order discrete time Euler integration update
         """
@@ -70,9 +80,9 @@ class LinearUnicycleKinematics(LinearRobot):
     """
     This is a linearization of the unicycle kinematics
     """
-    def get_drawable(self) -> Tuple[float, float, float]:
-        return tuple(self.x)
+    def get_drawable(self) -> Tuple[np.ndarray, float]:
+        return self.x[:2], self.x[2]
 
     @classmethod
-    def from_dt(cls, x: np.ndarray, dt : float) -> LinearUnicycleKinematics:
+    def from_dt(cls, x: np.ndarray, dt: float) -> LinearUnicycleKinematics:
         return LinearUnicycleKinematics(x, np.eye(3) * dt, np.eye(3) * dt)
