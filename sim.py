@@ -29,12 +29,21 @@ class Sim:
     drawables: Union[List[Callable[[Sim], Any]], None] = None
 
     def world_to_screen_pos(self, world_pos: np.ndarray) -> np.ndarray:
+        """
+        Converts an Nx2 array of world positions to screen positions
+        """
         pos = np.copy(world_pos)
         # This inversion is necessary due to standard y down image coordinates
-        pos[1] *= -1
+        if len(pos.shape) == 1: 
+            pos[1] *= -1 
+        else:
+            pos[:, 1] *= -1
         return pos * self.screen_dims / self.world_dims + self.screen_dims / 2
 
     def world_to_screen_dims(self, world_dims: np.ndarray) -> np.ndarray:
+        """
+        Converts an Nx2 array of world dimensions to screen dimensions
+        """
         return world_dims * np.array(self.screen_dims) / np.array(self.world_dims)
 
     def draw(self) -> None:
@@ -103,11 +112,13 @@ class Sim:
 if __name__ == "__main__":
     robot: Robot = UnicycleKinematics(np.array([0, 0, np.pi / 4]))
     traj: Trajectory = Trajectory(
-        np.array([[0, 0, 0], [20, 0, 0]]), np.array([0, 10]), np.zeros((3, 3))
+        np.array([[0, 0, 0], [10, 0, 0]]), np.array([0, 10]), np.zeros((3, 3))
     )
     controller: Controller = DummyController()
-    draw_traj = lambda sim: pygame.draw.lines(
-        sim.screen, (255, 0, 0), False, traj.poses[:, 0:2].tolist()
+    draw_traj = lambda sim : pygame.draw.lines(
+        sim.screen, (255, 0, 0), False, 
+        sim.world_to_screen_pos(
+        traj.poses[:, 0:2]).tolist()
     )
     sim = Sim(240, 60, robot, controller, drawables=[draw_traj])
     sim.run()
