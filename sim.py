@@ -1,7 +1,9 @@
+from __future__ import annotations
 from dataclasses import dataclass
+from typing import List, Callable, Union, Any
 
 from robot import Robot, UnicycleKinematics
-from controller import Controller, DummyController
+from controller import Controller, DummyController, Trajectory
 
 import numpy as np
 import pygame
@@ -24,6 +26,7 @@ class Sim:
     screen_dims: np.ndarray = np.array([500, 500])
     # Robot size in meters, RH coordinate with +X aligned to 'front'
     robot_size: np.ndarray = np.array([2, 1])
+    drawables: Union[List[Callable[[Sim], Any]], None] = None
 
     def world_to_screen_pos(self, world_pos: np.ndarray) -> np.ndarray:
         pos = np.copy(world_pos)
@@ -34,9 +37,9 @@ class Sim:
     def world_to_screen_dims(self, world_dims: np.ndarray) -> np.ndarray:
         return world_dims * np.array(self.screen_dims) / np.array(self.world_dims)
 
-    def draw(self, screen: pygame.surface.Surface) -> None:
+    def draw(self) -> None:
         # Blank background
-        screen.fill((0, 0, 0))
+        self.screen.fill((0, 0, 0))
 
         # Display the robot
         robot_pos, robot_theta = robot.get_drawable()
@@ -46,14 +49,18 @@ class Sim:
         hitbox = robot_sprite.get_rect(
             center=tuple(self.world_to_screen_pos(robot_pos))
         )
-        screen.blit(robot_sprite, hitbox)
+        self.screen.blit(robot_sprite, hitbox)
+
+        # Draw user defined things
+        if self.drawables:
+            [f(self) for f in self.drawables]
 
         # Flip buffers to draw graphics
         pygame.display.flip()
 
     def run(self) -> None:
         pygame.init()
-        screen: pygame.surface.Surface = pygame.display.set_mode(
+        self.screen: pygame.surface.Surface = pygame.display.set_mode(
             tuple(self.screen_dims)
         )
 
@@ -79,8 +86,8 @@ class Sim:
 
             # Get control input
             # There is no state estimation noise (for now)
-            # the controller gets the ground truth pose
-            u = controller.get_control(robot.x, time)
+            # the controller gets the ground truth state
+            u = self.controller.get_control(robot.x, time)
 
             # Update the simulated state
             for _ in range(sim_ticks_per_control):
@@ -88,13 +95,19 @@ class Sim:
                 time += sim_dt
 
             # Graphics
-            self.draw(screen)
+            self.draw()
 
         pygame.quit()
 
 
 if __name__ == "__main__":
     robot: Robot = UnicycleKinematics(np.array([0, 0, np.pi / 4]))
+    traj: Trajectory = Trajectory(
+        np.array([[0, 0, 0], [20, 0, 0]]), np.array([0, 10]), np.zeros((3, 3))
+    )
     controller: Controller = DummyController()
-    sim = Sim(240, 60, robot, controller)
+    draw_traj = lambda sim: pygame.draw.lines(
+        sim.screen, (255, 0, 0), False, traj.poses[:, 0:2].tolist()
+    )
+    sim = Sim(240, 60, robot, controller, drawables=[draw_traj])
     sim.run()
