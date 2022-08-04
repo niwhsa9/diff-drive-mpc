@@ -52,7 +52,7 @@ class Sim:
         # Flip buffers to draw graphics
         pygame.display.flip()
 
-    def run(self):
+    def run(self) -> None:
         pygame.init()
         screen: pygame.surface.Surface = pygame.display.set_mode(self.screen_dims)
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Tuple, Union
 
 import numpy as np
 
@@ -65,13 +65,19 @@ class UnicycleKinematics(Robot):
     def get_drawable(self) -> Tuple[np.ndarray, float]:
         return self.x[:2], self.x[2]
 
-    def update_state(self, u: np.ndarray, dt: float) -> np.ndarray:
+    def update_state(self, u: np.ndarray, dt: float, noise_cov : Union[np.ndarray, None] = None) -> np.ndarray:
         """
         Provides a first-order discrete time Euler integration update
+        Optionally introduce additive zero mean white gaussian noise 
         """
+        if noise_cov is None:
+            noise_cov = np.zeros((3, 3))
+        w = np.random.multivariate_normal(np.zeros(3), noise_cov)
+
         self.x[0] += u[0] * np.cos(self.x[2]) * dt
         self.x[1] += u[0] * np.sin(self.x[2]) * dt
         self.x[2] += u[1] * dt
+        self.x += w
         return self.x
 
 
