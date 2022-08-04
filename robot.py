@@ -65,7 +65,9 @@ class UnicycleKinematics(Robot):
     def get_drawable(self) -> Tuple[np.ndarray, float]:
         return self.x[:2], self.x[2]
 
-    def update_state(self, u: np.ndarray, dt: float, noise_cov : Union[np.ndarray, None] = None) -> np.ndarray:
+    def update_state(
+        self, u: np.ndarray, dt: float, noise_cov: Union[np.ndarray, None] = None
+    ) -> np.ndarray:
         """
         Provides a first-order discrete time Euler integration update
         Optionally introduce additive zero mean white gaussian noise 

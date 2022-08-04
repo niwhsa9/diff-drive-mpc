@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Tuple, Sequence
 
 from robot import Robot, UnicycleKinematics
 from controller import Controller, DummyController
@@ -54,11 +53,13 @@ class Sim:
 
     def run(self) -> None:
         pygame.init()
-        screen: pygame.surface.Surface = pygame.display.set_mode(self.screen_dims)
+        screen: pygame.surface.Surface = pygame.display.set_mode(
+            tuple(self.screen_dims)
+        )
 
         self.robot_sprite = pygame.transform.scale(
             pygame.image.load("resources/arrow.jpg"),
-            self.world_to_screen_dims(self.robot_size),
+            tuple(self.world_to_screen_dims(self.robot_size)),
         )
         # Necessary for alpha
         self.robot_sprite.convert()
@@ -68,7 +69,7 @@ class Sim:
 
         sim_ticks_per_control: int = int(round(self.sim_freq / self.control_freq))
         sim_dt: float = 1.0 / self.sim_freq
-        time = 0
+        time: float = 0
 
         while running:
             # Check for closing event
@@ -77,7 +78,9 @@ class Sim:
                     running = False
 
             # Get control input
-            u = controller.get_control(robot.x)
+            # There is no state estimation noise (for now)
+            # the controller gets the ground truth pose
+            u = controller.get_control(robot.x, time)
 
             # Update the simulated state
             for _ in range(sim_ticks_per_control):
@@ -91,7 +94,7 @@ class Sim:
 
 
 if __name__ == "__main__":
-    robot = UnicycleKinematics(np.array([0, 0, np.pi / 4]))
-    controller = DummyController()
+    robot: Robot = UnicycleKinematics(np.array([0, 0, np.pi / 4]))
+    controller: Controller = DummyController()
     sim = Sim(240, 60, robot, controller)
     sim.run()
