@@ -15,8 +15,7 @@ class Robot(ABC):
     x: np.ndarray
 
     @abstractmethod
-    def update_state(self, u: np.ndarray, dt: float) -> np.ndarray:
-        """
+    def update_state(self, u: np.ndarray, dt: float) -> np.ndarray: """
         Updates the internal state and returns the next state via
         whatever numerical ODE method is chosen
 
@@ -30,8 +29,6 @@ class Robot(ABC):
         """
         Our sim can draw a 2d robot with a position and orientation
         """
-        pass
-
 
 @dataclass
 class LinearRobot(Robot):
@@ -86,7 +83,7 @@ class UnicycleKinematics(Robot):
 @dataclass
 class LinearUnicycleKinematics(LinearRobot):
     """
-    This is a linearization of the unicycle kinematics
+    Linearization of unicycle kinematics
     """
 
     def get_drawable(self) -> Tuple[np.ndarray, float]:
@@ -95,3 +92,6 @@ class LinearUnicycleKinematics(LinearRobot):
     @classmethod
     def from_dt(cls, x: np.ndarray, dt: float) -> LinearUnicycleKinematics:
         return LinearUnicycleKinematics(x, np.eye(3) * dt, np.eye(3) * dt)
+
+class RungeKutta4:
+    raise NotImplementedError()
