@@ -13,24 +13,35 @@ References:
 
 **Derivation**
 
-I seek to find
+I seek to find the optimal control inputs minimizing the following cost, where $\tilde{x} =x-x_{r}$.
+
 $$
+\DeclareMathOperator*{\argmin}{arg\,min}
 u^* = \argmin_u \frac{1}{2}\tilde{x}^T Q \tilde{x}
 $$
-where $\tilde{x} =x-x_{r}$. I use $x = \begin{bmatrix} x(t) \\ x(t+\Delta t) \\ ... \\ x(t+T) \end{bmatrix}$ to refer to the vector of state vectors over the entire horizon, t $\rightarrow$ t + T with discretization $\Delta t$. Likewise, $x_r$ and $u$ follow the same notation. Both $x$ and $x_r$ are of length $N$.
+
+For both the predicted and reference trajectory I use the notation
+
+$$x = \begin{bmatrix} x(t) \\ x(t+\Delta t) \\ ... \\ x(t+T) \end{bmatrix}^T$$ 
+
+to refer to the vector of state vectors over the entire horizon, t $\rightarrow$ t + T with discretization $\Delta t$. Likewise, $x_r$ and $u$ follow the same notation. Both $x$ and $x_r$ are of length $N$.
 
 I compute the linearized system dynamics $A$ and $B$ matricies from the state estimate at the start of the horizon.
 
 Propogating the state space update from the initial state $x(t)$ lets me obtain
+
 $$
 x(t+k\Delta t) = \prod_{i=1}^{k} (A) \ x(t) + \begin{bmatrix} A^{k-1}B & A^{k-2} B & ... & AB & B\end{bmatrix} u(t + (k-1)\Delta t)
 $$
 
 By computing all states for the whole horizon, I can denote the predicted trajectory as:
+
 $$
 x = \alpha + R u
 $$
+
 I now substitute this into my original quadratic cost to get a QP over $u$ in canonical form. Letting $f=\alpha - x_r$
+
 $$
 \begin{align*}
 u^* &= \argmin_u \frac{1}{2} (\alpha - x_r+Ru)Q(\alpha - x_r + Ru) \\
@@ -40,8 +51,12 @@ u^* &= \argmin_u \frac{1}{2} (\alpha - x_r+Ru)Q(\alpha - x_r + Ru) \\
  &= \argmin_u f^TQRu+\frac{1}{2}u^TR^TQRu
 \end{align*}
 $$
- From here the mapping to the canonical form for CVXOPT is given as
+
+From here the mapping to the canonical form for CVXOPT is given as
+ 
 $$
-P := R^T Q R \\
-q := (\alpha -x_r)QR
+\begin{align*}
+&P := R^T Q R \\
+&q := (\alpha -x_r)QR
+\end{align*}
 $$
