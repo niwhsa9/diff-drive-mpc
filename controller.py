@@ -8,6 +8,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 from scipy.linalg import block_diag
 from qpsolvers import solve_qp
+import matplotlib.pyplot as plt
 
 
 class Controller(ABC):
@@ -36,9 +37,7 @@ class Trajectory:
             self.times, self.poses.T, bounds_error=False, fill_value=end_pts
         )
 
-    def get_poses_lookahead(
-        self, start_time: float, N: float, dt: float
-    ) -> np.ndarray:
+    def get_poses_lookahead(self, start_time: float, N: float, dt: float) -> np.ndarray:
         """
         Retrieves the poses of the trajectory from the start time to
         start time + duration at the given time discretization by 
@@ -46,12 +45,19 @@ class Trajectory:
         trajectory.
 
         """
-        sample_times = np.arange(0, N)*dt + start_time
+        sample_times = np.arange(0, N) * dt + start_time
         return self.interp(sample_times).T
 
 
 class PoseMPC(Controller):
-    def __init__(self, traj : Trajectory, Q : np.ndarray, max_vel : np.ndarray, horizon : float, dt : float):
+    def __init__(
+        self,
+        traj: Trajectory,
+        Q: np.ndarray,
+        max_vel: np.ndarray,
+        horizon: float,
+        dt: float,
+    ):
         """
         Generates control inputs to make a robot track the given trajectory.
         Minimizes 1/2 e'Qe where e represents the vector of pose errors over
@@ -61,55 +67,75 @@ class PoseMPC(Controller):
         traj - Trajectory you want to track
         Q - positive semi-definite matrix for quadratic cost in position
         """
-        self.N = int(np.floor(horizon/dt))
+        self.N = int(np.floor(horizon / dt))
         self.traj = traj
         self.Q = block_diag(*[Q for _ in range(self.N)])
-        self.horizon = horizon 
+        self.horizon = horizon
         self.dt = dt
         self.max_vel = max_vel
         self.prev_u = np.zeros(2)
 
-        self.G = np.vstack((np.eye(self.N*2),np.eye(self.N*2)))
-        self.h = np.tile(self.max_vel, self.N*2)
+        self.G = np.vstack((np.eye(self.N * 2), -np.eye(self.N * 2)))
+        self.h = np.tile(self.max_vel, self.N * 2)
 
     # TODO vectorize list comprehensions for matrix powers
     def get_control(self, x: np.ndarray, t: float) -> np.ndarray:
 
         # Get the reference trajectory samples over the horizon
-        x_r = self.traj.get_poses_lookahead(t, self.N, self.dt) # N x 3
+        x_r = self.traj.get_poses_lookahead(t, self.N, self.dt)  # N x 3
 
         # Get the Jacobians of the model at the current state
-        model : LinearRobot = LinearUnicycleKinematics.from_dt(x, self.prev_u, self.dt)
+        model: LinearRobot = LinearUnicycleKinematics.from_dt(x, self.prev_u, self.dt)
         A = model.A
         B = model.B
 
         # Determine the matricies S and R that allow us to roll out the
-        # predicted trajectory x over the horzion  
-        # x = S x_t + R u_t:t+N 
-        S = np.array( [np.linalg.matrix_power(A, n) for n in range(1, self.N+1)] ) # N x 3 x 3
-        alpha = S @ x # N x 3
-        # Compute the highest order row for final predicted state 
+        # predicted trajectory x over the horzion
+        # x = S x_t + R u_t:t+N
+        S = np.array(
+            [np.linalg.matrix_power(A, n) for n in range(1, self.N + 1)]
+        )  # N x 3 x 3
+        alpha = S @ x  # N x 3
+        # Compute the highest order row for final predicted state
         R_nm1_b = np.tile(B, (self.N, 1, 1))
-        R_nm1_a = np.array([ np.linalg.matrix_power(A, i) for i in range(self.N)])
-        R_nm1 = R_nm1_a @ R_nm1_b # N x 3 x 2
-        R_nm1 = R_nm1.reshape(self.N*2, -1).T # 3 x (2)(N)
+        R_nm1_a = np.array(
+            [np.linalg.matrix_power(A, i) for i in reversed(range(self.N))]
+        )
+        R_nm1 = R_nm1_a @ R_nm1_b  # N x 3 x 2
+        R_nm1 = np.hstack(R_nm1)  # 3 x (2)(N)
         # Build the R matrix to get predictions at each step
-        R = np.tile(R_nm1, (self.N, 1)) # (3)(N) x (2)(N)
-        R = np.array([np.roll(row, x) for row, x in zip(R, -np.arange(self.N)[::-1].repeat(3))])
+        R = np.tile(R_nm1, (self.N, 1))  # (3)(N) x (2)(N)
+        R = np.array(
+            [np.roll(row, x) for row, x in zip(R, -np.arange(self.N)[::-1].repeat(3))]
+        )
         # Build block triangular mask and apply
         mask = np.repeat(np.repeat(np.tril(np.ones((self.N, self.N))), 2, 1), 3, 0)
         R = R * mask
 
-        # Formulate the QP in canonical form 
+        # Formulate the QP in canonical form
         # 1/2 x'Px + q'x
         # G x <= h
         P = R.T @ self.Q @ R
         q = (alpha - x_r).reshape(-1) @ (self.Q @ R)
         u_optimal = solve_qp(P, q, self.G, self.h, None, None, solver="cvxopt")
         if u_optimal is None:
-            u_optimal = np.array([0, 0])
-        self.prev_u = u_optimal
-        return u_optimal
+            raise RuntimeError("no solution to QP")
+        self.prev_u = u_optimal[0:2]
+
+        # rollout debugging
+        rollout = alpha.reshape(-1) + R @ u_optimal
+        x_rollout = rollout[::3]
+        y_rollout = rollout[1::3]
+        theta_rollout = rollout[2::3]
+        #print(u_optimal[0:2])
+        #plt.scatter(x_rollout, y_rollout)
+        #plt.figure()
+        #plt.plot(theta_rollout)
+        ##plt.plot(u_optimal[1::2])
+        ##plt.plot(u_optimal[0::2])
+        #plt.show()
+
+        return u_optimal[0:2]
 
 
 class PoseVelMPC(Controller):

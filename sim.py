@@ -34,8 +34,8 @@ class Sim:
         """
         pos = np.copy(world_pos)
         # This inversion is necessary due to standard y down image coordinates
-        if len(pos.shape) == 1: 
-            pos[1] *= -1 
+        if len(pos.shape) == 1:
+            pos[1] *= -1
         else:
             pos[:, 1] *= -1
         return pos * self.screen_dims / self.world_dims + self.screen_dims / 2
@@ -96,6 +96,7 @@ class Sim:
             # Get control input
             # There is no state estimation noise (for now)
             # the controller gets the ground truth state
+            # u = np.array([0.1, 0.05])
             u = self.controller.get_control(robot.x, time)
 
             # Update the simulated state
@@ -110,15 +111,23 @@ class Sim:
 
 
 if __name__ == "__main__":
-    robot: Robot = UnicycleKinematics(np.array([0, 0, np.pi / 4]))
+    robot: Robot = UnicycleKinematics(np.array([0.0, 0, 0]))
     traj: Trajectory = Trajectory(
-        np.array([[0, 0, 0], [10, 0, 0]]), np.array([0, 10]), np.zeros((3, 3))
+        np.array([[0, 0, 0], [10, 0, 0], [10, 1, np.pi/2], [10, 10, np.pi/2]]), np.array([0, 10, 11, 20]), np.zeros((3, 3))
     )
-    controller: Controller = PoseMPC(traj, np.eye(3), np.array([1.0, 1.0]), 1, 0.1)
-    draw_traj = lambda sim : pygame.draw.lines(
-        sim.screen, (255, 0, 0), False, 
-        sim.world_to_screen_pos(
-        traj.poses[:, 0:2]).tolist()
+    controller: Controller = PoseMPC(
+        traj,
+        np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 100.0]]),
+        #np.array([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]),
+        np.array([1.0, 0.1]),
+        1,
+        0.1,
+    )
+    draw_traj = lambda sim: pygame.draw.lines(
+        sim.screen,
+        (255, 0, 0),
+        False,
+        sim.world_to_screen_pos(traj.poses[:, 0:2]).tolist(),
     )
     sim = Sim(240, 60, robot, controller, drawables=[draw_traj])
     sim.run()
