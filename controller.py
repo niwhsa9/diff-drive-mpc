@@ -69,7 +69,8 @@ class PoseMPC(Controller):
         """
         self.N = int(np.floor(horizon / dt))
         self.traj = traj
-        self.Q = block_diag(*[Q for _ in range(self.N)])
+        # Introduce exponential increasing costs for further along in traj
+        self.Q = block_diag(*[2**i * Q for i in range(self.N)])
         self.horizon = horizon
         self.dt = dt
         self.max_vel = max_vel
