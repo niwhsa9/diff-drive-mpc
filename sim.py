@@ -116,10 +116,11 @@ if __name__ == "__main__":
         np.array([
                     [0, 0, 0], [10, 0, 0], 
                     [10, 1, np.pi / 2], [10, 10, np.pi / 2],
-                    [9, 10, np.pi], [-10, 10, np.pi]
+                    [9, 10, np.pi], [-10, 10, np.pi],
+                    [-10, 9, 3*np.pi/2], [-10, -10, 3*np.pi/2]
                 
                 ]),
-        np.array([0, 10, 11, 20, 21, 40]),
+        np.array([0, 10, 11, 20, 21, 40, 41, 60]),
         np.zeros((3, 3)),
     )
     controller: Controller = PoseMPC(
