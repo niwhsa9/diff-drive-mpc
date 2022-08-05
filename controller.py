@@ -75,9 +75,10 @@ class PoseMPC(Controller):
         self.dt = dt
         self.max_vel = max_vel
         self.prev_u = np.zeros(2)
-
         self.G = np.vstack((np.eye(self.N * 2), -np.eye(self.N * 2)))
         self.h = np.tile(self.max_vel, self.N * 2)
+        self.x_rollout = None
+        self.y_rollout = None
 
     # TODO vectorize list comprehensions for matrix powers
     def get_control(self, x: np.ndarray, t: float) -> np.ndarray:
@@ -124,18 +125,12 @@ class PoseMPC(Controller):
         self.prev_u = u_optimal[0:2]
 
         # rollout debugging
-        rollout = alpha.reshape(-1) + R @ u_optimal
-        x_rollout = rollout[::3]
-        y_rollout = rollout[1::3]
-        theta_rollout = rollout[2::3]
-        # print(u_optimal[0:2])
-        # plt.scatter(x_rollout, y_rollout)
-        # plt.figure()
-        # plt.plot(theta_rollout)
-        ##plt.plot(u_optimal[1::2])
-        ##plt.plot(u_optimal[0::2])
+        rollout = R @ u_optimal + alpha.reshape(-1)
+        self.x_rollout = rollout[::3]
+        self.y_rollout = rollout[1::3]
+        # plt.scatter(self.x_rollout, self.y_rollout)
         # plt.show()
-
+        theta_rollout = rollout[2::3]
         return u_optimal[0:2]
 
 
