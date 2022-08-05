@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import List, Callable, Union, Any
 
 from robot import Robot, UnicycleKinematics
-from controller import Controller, DummyController, Trajectory
+from controller import Controller, DummyController, Trajectory, PoseMPC
 
 import numpy as np
 import pygame
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     traj: Trajectory = Trajectory(
         np.array([[0, 0, 0], [10, 0, 0]]), np.array([0, 10]), np.zeros((3, 3))
     )
-    controller: Controller = DummyController()
+    controller: Controller = PoseMPC(traj, np.eye(3), np.array([1.0, 1.0]), 1, 0.1)
     draw_traj = lambda sim : pygame.draw.lines(
         sim.screen, (255, 0, 0), False, 
         sim.world_to_screen_pos(

@@ -25,9 +25,7 @@ class Robot(ABC):
         """
 
     @abstractmethod
-    def get_drawable(self) -> Tuple[np.ndarray, float]:
-        """
-        Our sim can draw a 2d robot with a position and orientation
+    def get_drawable(self) -> Tuple[np.ndarray, float]: """ Our sim can draw a 2d robot with a position and orientation
         """
 
 @dataclass
@@ -90,8 +88,18 @@ class LinearUnicycleKinematics(LinearRobot):
         return self.x[:2], self.x[2]
 
     @classmethod
-    def from_dt(cls, x: np.ndarray, dt: float) -> LinearUnicycleKinematics:
-        return LinearUnicycleKinematics(x, np.eye(3) * dt, np.eye(3) * dt)
+    def from_dt(cls, x: np.ndarray, u : np.ndarray, dt: float) -> LinearUnicycleKinematics:
+        A = np.array([
+            [1, 0, -u[0]*np.sin(x[2])*dt],
+            [0, 1, u[0]*np.cos(x[2])*dt], 
+            [0, 0, 1]
+        ])
+        B = np.array([
+            [np.cos(x[2])*dt, 0],
+            [np.sin(x[2])*dt, 0], 
+            [0, dt]
+        ])
+        return LinearUnicycleKinematics(x, A, B)
 
 class RungeKutta4:
-    raise NotImplementedError()
+    pass
