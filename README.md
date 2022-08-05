@@ -6,10 +6,11 @@ This repository contains two things
 - A fast linear MPC for trajectory tracking on differential drives that is solved via a quadratic program
 
 **References**
-- The unicycle jacobian, exponential cost increase, and QP formulation are based on the method in this paper: http://www.ece.ufrgs.br/~fetter/sbai05_10022.pdf
-- http://underactuated.mit.edu/index.html was generally helpful to me
-- https://github.com/michiganrobotics/rob101/blob/main/Fall%202020/Projects/Project-03/ derrives a simplification for repeated application of the state space propogation in discrete time
-- The formulation of the position-only trajectory tracking MPC is included below. It is inspired by what is done in the linked work but not explicitly derived.
+- The unicycle jacobian, exponential cost increase, and QP formulation are based on the method in this [paper](http://www.ece.ufrgs.br/~fetter/sbai05_10022.pdf). 
+- This [set of notes](http://underactuated.mit.edu/index.html) was generally helpful to me
+- This [document](https://github.com/michiganrobotics/rob101/blob/main/Fall%202020/Projects/Project-03/) derrives a simple equation for repeated application of state space propogation in discrete time
+
+I employ a path following MPC which is a variant of the trajectory tracking approach linked in the paper above. It's derivation is inspired from the trajectory tracker, but sufficiently different enough that I've included it below for (mostly self) reference
 
 **Derivation**
 
