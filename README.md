@@ -1,9 +1,13 @@
-## MPC Trajectory Tracker
+# MPC Trajectory Tracker
+**Demo**
+
+![Demo run](https://github.com/niwhsa9/mpc-trajectory-tracker/blob/master/resources/demo.gif?raw=true)
+
 **Contents** 
 
 This repository contains two things
 - A general framework for controller testing including robot dynamical system simulation and visualization. There is no state estimation noise, though the simulated dynamics are the true non-linear dynamics with additive gaussian noise
-- A fast linear MPC for trajectory tracking on differential drives that is solved via a quadratic program
+- A fast linear MPC for trajectory tracking on differential drives that is solved via a quadratic program. The controller can enforce kinematically consistent and feasiable outputs such as maximum linear and angular velocity. 
 
 **References**
 - The unicycle jacobian, exponential cost increase, and QP formulation are based on the method in this [paper](http://www.ece.ufrgs.br/~fetter/sbai05_10022.pdf). 
