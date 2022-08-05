@@ -70,7 +70,7 @@ class PoseMPC(Controller):
         self.N = int(np.floor(horizon / dt))
         self.traj = traj
         # Introduce exponential increasing costs for further along in traj
-        self.Q = block_diag(*[2**i * Q for i in range(self.N)])
+        self.Q = block_diag(*[2 ** i * Q for i in range(self.N)])
         self.horizon = horizon
         self.dt = dt
         self.max_vel = max_vel
@@ -128,13 +128,13 @@ class PoseMPC(Controller):
         x_rollout = rollout[::3]
         y_rollout = rollout[1::3]
         theta_rollout = rollout[2::3]
-        #print(u_optimal[0:2])
-        #plt.scatter(x_rollout, y_rollout)
-        #plt.figure()
-        #plt.plot(theta_rollout)
+        # print(u_optimal[0:2])
+        # plt.scatter(x_rollout, y_rollout)
+        # plt.figure()
+        # plt.plot(theta_rollout)
         ##plt.plot(u_optimal[1::2])
         ##plt.plot(u_optimal[0::2])
-        #plt.show()
+        # plt.show()
 
         return u_optimal[0:2]
 

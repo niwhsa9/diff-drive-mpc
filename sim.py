@@ -113,12 +113,18 @@ class Sim:
 if __name__ == "__main__":
     robot: Robot = UnicycleKinematics(np.array([0.0, 0, 0]))
     traj: Trajectory = Trajectory(
-        np.array([[0, 0, 0], [10, 0, 0], [10, 1, np.pi/2], [10, 10, np.pi/2]]), np.array([0, 10, 11, 20]), np.zeros((3, 3))
+        np.array([
+                    [0, 0, 0], [10, 0, 0], 
+                    [10, 1, np.pi / 2], [10, 10, np.pi / 2],
+                    [9, 10, np.pi], [-10, 10, np.pi]
+                
+                ]),
+        np.array([0, 10, 11, 20, 21, 40]),
+        np.zeros((3, 3)),
     )
     controller: Controller = PoseMPC(
         traj,
-        np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 100.0]]),
-        #np.array([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]),
+        np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 50.0]]),
         np.array([1.0, 0.2]),
         0.2,
         0.05,
