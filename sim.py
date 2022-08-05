@@ -119,9 +119,9 @@ if __name__ == "__main__":
         traj,
         np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 100.0]]),
         #np.array([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]),
-        np.array([1.0, 0.1]),
-        1,
-        0.1,
+        np.array([1.0, 0.2]),
+        0.2,
+        0.05,
     )
     draw_traj = lambda sim: pygame.draw.lines(
         sim.screen,
