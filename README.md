@@ -32,7 +32,7 @@ $$x = \begin{bmatrix} x(t) \\ x(t+\Delta t) \\ ... \\ x(t+T) \end{bmatrix}^T$$
 to refer to the vector of state vectors over the entire horizon, t $\rightarrow$ t + T with discretization $\Delta t$. Likewise, $x_r$ and $u$ follow the same notation. Both $x$ and $x_r$ are of length $N$. I compute the linearized system dynamics $A$ and $B$ matricies from the state estimate at the start of the horizon. Propogating the state space update from the initial state $x(t)$ lets me obtain
 
 $$
-x(t+k\Delta t) = \prod_{i=1}^{k} (A) \ x(t) + \begin{bmatrix} A^{k-1}B & A^{k-2} B & ... & AB & B\end{bmatrix} u(t + (k-1)\Delta t)
+x(t+k\Delta t) = A^K \ x(t) + \begin{bmatrix} A^{k-1}B & A^{k-2} B & ... & AB & B\end{bmatrix} u(t + (k-1)\Delta t)
 $$
 
 By computing all states for the whole horizon, I can denote the predicted trajectory as:
