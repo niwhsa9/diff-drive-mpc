@@ -21,8 +21,7 @@ I employ a path following MPC which is a variant of the trajectory tracking appr
 I seek to find the optimal control inputs minimizing the following cost, where $\tilde{x} =x-x_{r}$.
 
 $$
-\DeclareMathOperator*{\argmin}{arg\,min}
-u^* = \argmin_u \frac{1}{2}\tilde{x}^T Q \tilde{x}
+u^* = \arg\min_u \frac{1}{2}\tilde{x}^T Q \tilde{x}
 $$
 
 For both the predicted and reference trajectory I use the notation
@@ -45,11 +44,11 @@ I now substitute this into my original quadratic cost to get a QP over $u$ in ca
 
 $$
 \begin{align*}
-u^* &= \argmin_u \frac{1}{2} (\alpha - x_r+Ru)Q(\alpha - x_r + Ru) \\
- &= \argmin_u \frac{1}{2} (f + Ru)Q(f + Ru) \\
- &= \argmin_u (\frac{1}{2}f^T Q + \frac{1}{2}u^TRQ)(f+Ru)\\
- &= \argmin_u \frac{1}{2}f^TQf+\frac{1}{2}f^TQRu+\frac{1}{2}u^TR^TQf+\frac{1}{2}u^TR^TQRu\\
- &= \argmin_u f^TQRu+\frac{1}{2}u^TR^TQRu
+u^* &= \arg\min_u \frac{1}{2} (\alpha - x_r+Ru)Q(\alpha - x_r + Ru) \\
+ &= \arg\min_u \frac{1}{2} (f + Ru)Q(f + Ru) \\
+ &= \arg\min_u (\frac{1}{2}f^T Q + \frac{1}{2}u^TRQ)(f+Ru)\\
+ &= \arg\min_u \frac{1}{2}f^TQf+\frac{1}{2}f^TQRu+\frac{1}{2}u^TR^TQf+\frac{1}{2}u^TR^TQRu\\
+ &= \arg\min_u f^TQRu+\frac{1}{2}u^TR^TQRu
 \end{align*}
 $$
 
