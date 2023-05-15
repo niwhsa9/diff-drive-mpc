@@ -1,4 +1,4 @@
-# MPC Trajectory Tracker
+# Diff Drive MPC
 **Demo**
 
 ![Demo run](https://github.com/niwhsa9/mpc-trajectory-tracker/blob/master/resources/demo.gif?raw=true)
